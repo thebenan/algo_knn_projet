@@ -116,7 +116,7 @@ class KNNClass:
         """
         # on utilise par défaut la fonction sim_cosinus si aucune fonction de similarité n'est pas fournie
         if sim_func is None:
-            sim_func = TextVect.sim_cosinus
+            sim_func = Similarity.sim_cosinus
         try:
             # dictionnaire pour stocker les similarités moyennes pour chaque label
             sim_dict = {}
@@ -331,6 +331,12 @@ class TextVect:
 
         
 
+        
+        
+        
+        
+class Similarity:
+        
     def scalaire(vector1:dict,vector2:dict)-> float:
         """
         Cette fonction récupère deux vecteurs sous forme de hashage 
@@ -444,6 +450,9 @@ class TextVect:
 
 
 
+          
+          
+# main
 if __name__ == "__main__":
     stoplist = TextVect.read_dict("stopwords_french.txt")
     folder_names=[f.name for f in os.scandir("./KNN_corpus") if f.is_dir()]
