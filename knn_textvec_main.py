@@ -32,7 +32,7 @@ class KNNClass:
             raise ValueError(f"La classe {label} existe déjà dans le modèle")
         else:
             self.data[label] = vectors
-            print("Classe ajoutée")
+        print("Classe ajoutée")
         
 
     def add_vector(self, label: str, vector):
@@ -46,7 +46,7 @@ class KNNClass:
             self.data[label] = [vector]
         else:
             self.data[label].append(vector)
-            print("Ajout effectué")
+        print("Ajout effectué")
 
     def del_class(self, label:str):
         """
@@ -60,11 +60,11 @@ class KNNClass:
             raise ValueError(f"La classe {label} n'existe pas")            
         else:
             del self.data[label]
-            print("Suppression effectuée")
+        print("Suppression effectuée")
 
     def save_as_json(self, filename:str):
         """
-        enregistre les données de la classe actuelle au format JSON dans le fichier spécifié
+        enregistre les données de la classe actuelle au format JSON dans un fichier
         Args:
         - filename (str): le nom du fichier où on enregistre les données
         Output:
@@ -88,8 +88,8 @@ class KNNClass:
         - False : en cas d'erreur d'entrée/sortie, sinon None
         """
         try:
-            with open(filename, 'r') as infile:
-                data = json.load(infile)
+            with open(filename, 'r') as f:
+                data = json.load(f)
                 self.description = data['description']
                 self.data = data['data']
         except IOError as err:
@@ -98,7 +98,7 @@ class KNNClass:
         return True
 
 
-    def classify(vector: dict, k: int, sim_func=None) -> List[Tuple[str, float]]:
+    def classify(self, vector: dict, k: int, sim_func=None) -> List[Tuple[str, float]]:
         """
         cette fonction récupère un vecteur sous forme de hashage 
         le nombre de voisins les plus proches à considérer, et une fonction de similarité sim_func
@@ -121,7 +121,7 @@ class KNNClass:
             # dictionnaire pour stocker les similarités moyennes pour chaque label
             sim_dict = {}
             # parcours de chaque label dans le dictionnaire des vecteurs
-            for label, vec_list in vector_dict.items():
+            for label, vec_list in self.data.items():
                 # liste pour stocker les similarités pour chaque vecteur du label
                 sim_list = []        
                 # parcours de chaque vecteur du label
@@ -167,6 +167,8 @@ class TextVect:
         """
         # normalisation des apostrophes pour une traitement correcte
         text = re.sub(r"’", "'", text)
+        # normalisation pour oe en œ
+        text = re.sub(r"œ", "oe", text)
         return tok_grm.findall(text)
 
     # vectorise
@@ -214,7 +216,7 @@ class TextVect:
             except IOError as err:
                 print("Impossible de lire les fichiers dans le dossier", folder_name, f"Erreur: {err}")
                 continue # passe à la deuxième boucle 
-            vector =[]
+            vector = []
             # parcours des fichiers dans le dossier
             for file_name in file_names:
                 try:
@@ -268,10 +270,8 @@ class TextVect:
         Output :
             list : les documents filtré
         """
-        
         # on crée une liste vide comme une liste de documents avec des tokens filtrés
         documents_filtre = []
-        # on parcourt chaque dictionnaire dans les dictionnaires de liste et crée un dictionnaire vide en tant que dictionnaire nouveau filtré
         for document in documents:
             # on crée un nouveau document filtré avec la même propriété 'label'
             document_filtre = {"label": document["label"]}
@@ -294,49 +294,68 @@ class TextVect:
         # on retourne la liste des documents filtrés
         return documents_filtre
 
+
     def tf_idf (documents:list)->list:
         """
-        Calcul du TF.IDF pour une liste de documents
+        calcul du score TF-IDF pour chaque mot dans chaque vecteur 
+        de chaque document d'une liste de documents
         Input : 
-        arg1 : list(dict) : une liste de documents ...
+        arg1 : list(dict) : liste de dictionnaires représentant des documents 
+                chaque document doit contenir une clé "vect" 
+                dont la valeur est une liste de vecteurs de mots
         Output : 
-        valeur de retour : une liste de documents avec une modification des fréq
-        associées à chaque mot (on divise par le log de la fréq de documents)
+            valeur de retour : list : liste de dictionnaires représentant les mêmes documents
+                mais avec des scores TF-IDF calculés pour chaque mot dans chaque vecteur
         """
-        documents_new=copy.deepcopy(documents)
-        #création d'un dict contenant tous les mots de tous les docs
-        mots=set()
-        # 1. on crée l'ensemble de tous les mots
-        # on parcours les documents
-        for doc in documents:
-            #pour chaque mot du doc étant dans notre vecteur doc
-            #word = notre variable qui récupère chaque mot
-            for word in doc["vect"]:
-                mots.add(word)
-        # 2. on parcourt tous les mots pour calculer la fréquence de doc de chacun
-        freq_doc={}
-        for word in mots:
-            # on parcourt les documents
-            for doc in documents:
-                if word in doc["vect"]:
+        # copie de la liste des documents pour éviter de modifier les données d'origine
+        documents_new = copy.deepcopy(documents)
+        # dictionnaire pour stocker le nombre de documents contenant chaque mot
+        freq_doc = {}
+        # itération sur chaque document dans la liste
+        for document in documents_new:
+            # liste de tous les mots présents dans les vecteurs du document
+            all_words = set(  # crée un ensemble contenant tous les mots dans les vecteurs du document
+                word  # pour chaque mot
+                for vector in document["vect"]  # dans chaque vecteur du document
+                for word in vector  # pour chaque mot dans le vecteur
+            )
+            # dict pour stocker le nombre d'occurrences de chaque mot dans le document
+            word_count_dict = {}
+            # itération sur chaque vecteur dans le document
+            for vector in document["vect"]:
+                # itération sur chaque mot dans le vecteur
+                for word in vector:
+                    # ajout du mot au dictionnaire et incrémentation de son nombre d'occurrences
+                    if word not in word_count_dict:
+                        word_count_dict[word] = 0
+                    word_count_dict[word] += 1
+            # calcul du score tf-idf pour chaque mot dans chaque vecteur dans le document
+            for vector in document["vect"]:
+                vector_word_count_dict = {}
+                # calcul de la fréquence de chaque mot dans le vecteur
+                for word in vector:
+                    if word not in vector_word_count_dict:
+                        vector_word_count_dict[word] = 0
+                    vector_word_count_dict[word] += 1
+                # normalisation des scores tf-idf pour chaque mot dans le vecteur
+                for word in vector:
+                    # calcul de la fréquence inverse du mot dans l'ensemble des documents
                     if word not in freq_doc:
-                        freq_doc[word]=1
-                    else :
-                        freq_doc[word]+=1        
-        # 3. on parcourt les docs mot par mot pour mettre à jour la fréquence
-        for doc in documents_new:
-            for word in doc["vect"]:
-                doc["vect"][word]=doc["vect"][word] / math.log(1+freq_doc[word])
+                        freq_doc[word] = 0
+                        for d in documents_new:
+                            if word in set(w for v in d["vect"] for w in v):
+                                freq_doc[word] += 1
+                    idf = math.log(1 + len(documents_new) / freq_doc[word])
+                    # calcul du score tf-idf pour le mot dans le vecteur
+                    tf_idf_score = (vector_word_count_dict[word] / len(vector)) * idf
+                    # stockage du score normalisé dans le vecteur
+                    vector[word] = tf_idf_score
         return documents_new
 
-        
+    
+class Similarity :
 
-        
-        
-        
-        
-class Similarity:
-        
+
     def scalaire(vector1:dict,vector2:dict)-> float:
         """
         Cette fonction récupère deux vecteurs sous forme de hashage 
@@ -449,9 +468,93 @@ class Similarity:
 
 
 
+        
+        
+# fonctions de gestion des fonctions de la classe KNNClass
 
-          
-          
+def add_class_input(knn_object):
+    """
+    demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode add_class() de la classe KNNClass
+    Args:
+        - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode add_class()
+    """
+    label =None
+    while label is None:
+        try:
+            label = str(input("Entrez le label de la nouvelle classe : "))
+            break
+        except ValueError:
+            print("Erreur : le label doit être un string")
+    vectors = []
+    vector_input=""
+    while 'q' not in vector_input:
+        vector_input = input("Entrez un vecteur (ou tapez 'q' pour terminer) : ")
+        if 'q' not in vector_input:
+            try:
+                vector_input = eval(vector_input)  # convertit la chaîne de caractères en dictionnaire 
+                vectors.append(vector_input)
+            except (NameError, SyntaxError):
+                print("Erreur : vecteur invalide")
+    try:
+        knn_object.add_class(label, vectors)
+        print(f"Classe {label} ajoutée avec succès !")
+    except ValueError as e:
+        print(e)
+    return True
+
+        
+    
+def add_vector_input(knn_object):
+    """
+    demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode add_vector() de la classe KNNClass
+    Args:
+        - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode add_vector()
+    """
+    label = None
+    while label is None:
+        try:
+            label = str(input("Entrez le label de la classe : "))
+            if label not in knn_object.data:
+                print(f"La classe {label} n'existe pas encore dans le modèle")
+            break
+        except ValueError:
+            print("Erreur : le label doit être un string")          
+    vector = None
+    vector_input=''
+    while vector_input.strip() != 'q':
+        vector_input = input("Entrez un vecteur (ou tapez 'q' pour terminer) : ")
+        if vector_input.strip() == 'q':
+            break
+        try:
+            vector = eval(vector_input)  # convertit la chaîne de caractères en dictionnaire 
+        except (NameError, SyntaxError):
+            print("Erreur : vecteur invalide")            
+    knn_object.add_vector(label, vector)
+    
+    
+def del_class_input(classifier):
+    """
+    demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode del_class() de la classe KNNClass.
+    Args:
+        - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode del_class()
+    """
+    label = None
+    while label is None:
+        try:
+            label = str(input("Entrez le label de la classe à supprimer : "))
+            knn_object.del_class(label)
+            break
+        except ValueError as e:
+            print(e)
+
+
+
+        
+        
+        
+        
+        
+        
 # main
 if __name__ == "__main__":
     stoplist = TextVect.read_dict("stopwords_french.txt")
@@ -462,8 +565,19 @@ if __name__ == "__main__":
     filtered=TextVect.filtrage(stoplist, textes, False)
 #    print(filtered)
     filtered_tfidf=TextVect.tf_idf(filtered)
-    print(filtered_tfidf)
-    
+#    print(filtered_tfidf)
+    # instanciation de la classe KNNClass
     test_knn = KNNClass(description="données de test")
+    # ajout d'une nouvelle classe à l'instance test_knn
+    add_class_input(test_knn)
+#    classes = test_knn.get_classes()
+#    add_vector_input(test_knn)
+    # enregistrement des données du modèle dans un fichier JSON
+#    test_knn.save_as_json("./KNN_projet/my_data_knn.json")
+#    test2_knn = KNNClass(description="test 2")
+    # chargement des données du fichier "my_data_knn.json" dans l'instance test2_knn
+#    test2_knn.load_as_json("./KNN_projet/my_data_knn.json")
+
+    
 
 
