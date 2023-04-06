@@ -214,7 +214,7 @@ class TextVect:
             except IOError as err:
                 print("Impossible de lire les fichiers dans le dossier", folder_name, f"Erreur: {err}")
                 continue # passe à la deuxième boucle 
-        
+            vector =[]
             # parcours des fichiers dans le dossier
             for file_name in file_names:
                 try:
@@ -231,7 +231,7 @@ class TextVect:
                     tokens.extend([tok.lower() for tok in toks]) # conversion en minuscule des tokens
                 input_file.close()
                 # ajout du vecteur correspondant au fichier dans la liste vector
-                vector=TextVect.vectorise(tokens)
+                vector.append(TextVect.vectorise(tokens))
             # ajout du dictionnaire contenant le label et les vecteurs des fichiers dans la liste vectors
             vectors.append({'label': folder_name, 'vect': vector})
 #        print(vectors)
@@ -273,22 +273,25 @@ class TextVect:
         documents_filtre = []
         # on parcourt chaque dictionnaire dans les dictionnaires de liste et crée un dictionnaire vide en tant que dictionnaire nouveau filtré
         for document in documents:
-            document_filtre = {}
-            # on met la valeur de clé "label" dans dict document à celle de document_filtre et aussi la valeur de vect "un dict" au token
-            document_filtre["label"] = document["label"]
-            tokens = document["vect"]
-            # on crée un dictionnaire nouveau token_filtre
-            tokens_filtre = {}
-            # on parcourt chaque token dans les clés de dict tokens
-#            print(tokens)
-            for token in tokens.keys():
-            # selon le choix de l'utilisateur, si on veut éliminer les hapax, on exécute les codes ci-desous
-                if token.lower() not in stoplist and (not non_hapax or tokens[token]>1):
-                    tokens_filtre[token]=tokens[token]
-                # Après avoir terminé l'ajout des tokens dans le dictionnaire des tokens filtrés, on l'initialise dans le dictionnaire document_filtre
-                document_filtre["vect"]=tokens_filtre
-            # Finalement, on rajoute le dictionnaire document_filtre dans la liste des ensembles de documents filtrés (la liste documents_filtre)
-            documents_filtre.append(document_filtre)
+            # on crée un nouveau document filtré avec la même propriété 'label'
+            document_filtre = {"label": document["label"]}
+            document_filtre["vect"] = []
+            for tokens in document["vect"]:
+                # on crée un dictionnaire nouveau token_filtre
+                tokens_filtre = {}
+                for token, freq in tokens.items():
+                # on filtre les tokens en fonction de la stoplist et de la fréquence des mots
+                    if token.lower() not in stoplist:
+                        if non_hapax:
+                            if freq > 1:
+                                tokens_filtre[token] = freq
+                        else:
+                            tokens_filtre[token] = freq
+                # on ajoute les tokens filtrés au document filtré
+                document_filtre["vect"].append(tokens_filtre)
+            # on ajoute le document filtré à la liste des documents filtrés
+            documents_filtre.append(document_filtre)             
+        # on retourne la liste des documents filtrés
         return documents_filtre
 
     def tf_idf (documents:list)->list:
