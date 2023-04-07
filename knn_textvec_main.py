@@ -28,11 +28,19 @@ class KNNClass:
         Raises:
         - ValueError: si la classe avec le label fourni existe déjà dans le modèle
         """
-        if label in self.data:
+        if any(cls['label'] == label for cls in self.data):
             raise ValueError(f"La classe {label} existe déjà dans le modèle")
         else:
-            self.data[label] = vectors
-        print("Classe ajoutée")
+            new_class = {'label': label, 'vect': vectors}
+            self.data.append(new_class)
+            print("Classe ",label," a été ajoutée en utilisant la fonction add_class")
+
+        
+    def get_classes(self):
+        """
+        retourne un dictionnaire contenant les classes et leurs vecteurs
+        """
+        return list(self.data.copy())
         
 
     def add_vector(self, label: str, vector):
@@ -41,12 +49,16 @@ class KNNClass:
         Args:
         - label (str): le nom de la classe où on ajoute le vecteur
         - vector : le vecteur à ajouter
+        Raises:
+        - ValueError: si la classe avec le label fourni n'existe pas dans le modèle
         """
-        if label not in self.data:
-            self.data[label] = [vector]
-        else:
-            self.data[label].append(vector)
-        print("Ajout effectué")
+        for i in range(len(self.data)):
+            if self.data[i]["label"] == label:
+                self.data[i]["vect"].append(vector)
+                print("Vecteur ajouté à la classe", label," en utilisant la fonction add_vector")
+                return
+        raise ValueError(f"La classe {label} n'existe pas dans le modèle")
+
 
     def del_class(self, label:str):
         """
@@ -56,11 +68,14 @@ class KNNClass:
         Raises:
         - ValueError: si la classe avec le label fourni n'existe pas dans le modèle
         """
-        if label not in self.data:
-            raise ValueError(f"La classe {label} n'existe pas")            
-        else:
-            del self.data[label]
-        print("Suppression effectuée")
+        for cls in self.data:
+            if cls['label'] == label:
+                self.data.remove(cls)
+                print(f"La classe {label} a été supprimée en utilisant la fonction del_class")
+                return
+        raise ValueError(f"La classe {label} n'existe pas dans le modèle")
+
+
 
     def save_as_json(self, filename:str):
         """
@@ -72,12 +87,12 @@ class KNNClass:
         """
         try:
             with open(filename, 'w') as outfile:
-                json.dump({'description': self.description, 'data': self.data}, outfile)                
+                json.dump({'description': self.description, 'data': self.data}, outfile, ensure_ascii=False)                
         # ce bloc s'execute en cas d'erreur
         except IOError as err:
             print("Impossible d'ouvrir",filename,f"Erreur={err}")
             return False
-        return True
+        print("Le fichier JSON", filename," a été enregistré en utilisant la fonction save_as_json")
 
     def load_as_json(self, filename:str):
         """
@@ -95,7 +110,7 @@ class KNNClass:
         except IOError as err:
             print("Impossible d'ouvrir", filename, f"Erreur: {err}")
             return False
-        return True
+        print("Le fichier JSON", filename," a été chargé en utilisant la fonction save_as_json")
 
 
     def classify(self, vector: dict, k: int, sim_func=None) -> List[Tuple[str, float]]:
@@ -275,9 +290,10 @@ class TextVect:
         for document in documents:
             # on crée un nouveau document filtré avec la même propriété 'label'
             document_filtre = {"label": document["label"]}
+            #liste de dict de vecteurs
             document_filtre["vect"] = []
             for tokens in document["vect"]:
-                # on crée un dictionnaire nouveau token_filtre
+                # dict vect
                 tokens_filtre = {}
                 for token, freq in tokens.items():
                 # on filtre les tokens en fonction de la stoplist et de la fréquence des mots
@@ -297,8 +313,12 @@ class TextVect:
 
     def tf_idf (documents:list)->list:
         """
-        calcul du score TF-IDF pour chaque mot dans chaque vecteur 
-        de chaque document d'une liste de documents
+        calcul du score TF-IDF pour chaque mot dans chaque vecteur de chaque document d'une liste de documents
+        TF-IDF = (fréquence du mot dans le vecteur / nombre total de mots dans le vecteur) * log(nombre total de documents / nombre de documents contenant le mot)
+            - la fréquence du mot dans le vecteur est le nombre d'occurrences du mot dans le vecteur
+            - le nombre total de mots dans le vecteur est la somme des occurrences de tous les mots dans le vecteur
+            - le nombre total de documents est le nombre total de documents dans la liste de documents
+            - le nombre de documents contenant le mot est le nombre de documents dans la liste de documents qui contiennent le mot
         Input : 
         arg1 : list(dict) : liste de dictionnaires représentant des documents 
                 chaque document doit contenir une clé "vect" 
@@ -352,6 +372,11 @@ class TextVect:
                     vector[word] = tf_idf_score
         return documents_new
 
+    
+    
+    
+    
+    
     
 class Similarity :
 
@@ -408,7 +433,7 @@ class Similarity :
     
     def sim_euclidienne(vector1: dict, vector2: dict) -> float:
         """
-        calcule la similarité euclidienne entre deux vecteurs
+        calcul de la similarité euclidienne entre deux vecteurs
         la valeur de retour est un float compris entre 0 et 1
         Input :
             arg1 : vector1 - hash
@@ -428,7 +453,7 @@ class Similarity :
 
     def sim_pearson(vector1: dict, vector2: dict) -> float:
         """
-        calcule la similarité de Pearson entre deux vecteurs (mesure de la corrélation)
+        calcul de la similarité de Pearson entre deux vecteurs (mesure de la corrélation)
         varie entre -1 et 1 =>  1 indique une forte corrélation positive,
         -1 indique une forte corrélation négative et 0 indique l'absence de corrélation
         Input:
@@ -474,36 +499,39 @@ class Similarity :
 
 def add_class_input(knn_object):
     """
-    demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode add_class() de la classe KNNClass
+    demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode add_class() de la classe KNNClass.
     Args:
-        - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode add_class()
+        - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode add_class().
     """
-    label =None
-    while label is None:
+    label = ""
+    while not label:
+        label = input("Entrez le label de la nouvelle classe : ")
+        if not label:
+            print("Erreur : le label ne peut pas être vide")
+
+    vector_list = []
+    vector_input = None
+    while vector_input != '':
+        vector_input = input("Entrez un vecteur (ou tapez entrée pour terminer) : ")
+        print(f"vector_input = '{vector_input.strip()}'")
+        if not vector_input:
+            continue
         try:
-            label = str(input("Entrez le label de la nouvelle classe : "))
-            break
-        except ValueError:
-            print("Erreur : le label doit être un string")
-    vectors = []
-    vector_input=""
-    while 'q' not in vector_input:
-        vector_input = input("Entrez un vecteur (ou tapez 'q' pour terminer) : ")
-        if 'q' not in vector_input:
-            try:
-                vector_input = eval(vector_input)  # convertit la chaîne de caractères en dictionnaire 
-                vectors.append(vector_input)
-            except (NameError, SyntaxError):
-                print("Erreur : vecteur invalide")
+            vector = eval(vector_input)  # convertit la chaîne de caractères en dictionnaire 
+            vector_list.append(vector)
+        except (NameError, SyntaxError):
+            print("Erreur : vecteur invalide")
+    
+    print(f"Appel de la méthode add_class avec les arguments : label = {label}, vector_list = {vector_list}")
     try:
-        knn_object.add_class(label, vectors)
+        knn_object.add_class(label, vector_list)
         print(f"Classe {label} ajoutée avec succès !")
     except ValueError as e:
         print(e)
     return True
 
+
         
-    
 def add_vector_input(knn_object):
     """
     demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode add_vector() de la classe KNNClass
@@ -520,16 +548,17 @@ def add_vector_input(knn_object):
         except ValueError:
             print("Erreur : le label doit être un string")          
     vector = None
-    vector_input=''
-    while vector_input.strip() != 'q':
+    vector_input = ''
+    while vector_input.strip().lower() != 'q':
         vector_input = input("Entrez un vecteur (ou tapez 'q' pour terminer) : ")
-        if vector_input.strip() == 'q':
+        if vector_input.strip().lower() == 'q':
             break
         try:
             vector = eval(vector_input)  # convertit la chaîne de caractères en dictionnaire 
         except (NameError, SyntaxError):
             print("Erreur : vecteur invalide")            
-    knn_object.add_vector(label, vector)
+        knn_object.add_vector(label, vector)
+    print(f"Vecteur ajouté à la classe {label} avec succès !")
     
     
 def del_class_input(classifier):
@@ -543,13 +572,15 @@ def del_class_input(classifier):
         try:
             label = str(input("Entrez le label de la classe à supprimer : "))
             knn_object.del_class(label)
-            break
+            print(f"La classe {label} a été supprimée avec succès !")
         except ValueError as e:
             print(e)
 
 
+    # ajout d'une nouvelle classe à l'instance test_knn
+#    add_class_input(test_knn)
+#    add_vector_input(test_knn)
 
-        
         
         
         
@@ -566,18 +597,43 @@ if __name__ == "__main__":
 #    print(filtered)
     filtered_tfidf=TextVect.tf_idf(filtered)
 #    print(filtered_tfidf)
+
+
+
     # instanciation de la classe KNNClass
     test_knn = KNNClass(description="données de test")
-    # ajout d'une nouvelle classe à l'instance test_knn
-    add_class_input(test_knn)
-#    classes = test_knn.get_classes()
-#    add_vector_input(test_knn)
-    # enregistrement des données du modèle dans un fichier JSON
-#    test_knn.save_as_json("./KNN_projet/my_data_knn.json")
-#    test2_knn = KNNClass(description="test 2")
-    # chargement des données du fichier "my_data_knn.json" dans l'instance test2_knn
-#    test2_knn.load_as_json("./KNN_projet/my_data_knn.json")
-
     
-
-
+    # les données obtenues des fonctions de la classe TextVect :
+    desserts_vectors1 = [{'pâte': 0.06301338005090412, 'farine': 0.06301338005090412, 'beurre': 0.041649578721552505, 'oeufs': 0.06301338005090412, 'pincée': 0.041649578721552505, 'sel': 0.03150669002545206, 'verres': 0.06301338005090412, 'eau': 0.041649578721552505, 'crème': 0.041649578721552505, 'pâtissière': 0.06301338005090412, 'lait': 0.06301338005090412, 'maïzena': 0.041649578721552505, 'cuillère': 0.041649578721552505, 'soupe': 0.03150669002545206, 'essence': 0.06301338005090412, 'café': 0.041649578721552505, 'sucre': 0.06301338005090412, 'jaunes': 0.06301338005090412, 'oeuf': 0.06301338005090412, 'glaçage': 0.06301338005090412, 'fondant': 0.06301338005090412, 'boîte': 0.041649578721552505}]    
+    desserts_vectors2 = {'biscuit': 0.055451774444795626, 'fraisier': 0.055451774444795626, 'oeuf': 0.055451774444795626, 'entiers': 0.055451774444795626, 'farine': 0.055451774444795626, 'sucre': 0.055451774444795626, 'vanille': 0.055451774444795626, 'poudre': 0.055451774444795626, 'crème': 0.03665162927496621, 'mousseline': 0.055451774444795626, 'jaune': 0.055451774444795626, 'lait': 0.055451774444795626, 'litre': 0.055451774444795626, 'maïzena': 0.03665162927496621, 'beurre': 0.03665162927496621, 'doux': 0.055451774444795626, 'sirop': 0.055451774444795626, 'eau': 0.03665162927496621, 'décoration': 0.055451774444795626, 'fraise': 0.055451774444795626, 'lavée': 0.055451774444795626, 'équeutée': 0.055451774444795626, 'glace': 0.055451774444795626, 'pâte': 0.055451774444795626, 'amande': 0.055451774444795626}
+    desserts_vectors3 = {'noisette': 0.055451774444795626, 'beurre': 0.03665162927496621, 'farine': 0.055451774444795626, 'maïzena': 0.03665162927496621, 'cuillère': 0.03665162927496621, 'soupe': 0.027725887222397813, 'cacao': 0.055451774444795626, 'oeufs': 0.055451774444795626, 'sucre': 0.055451774444795626, 'sirop': 0.055451774444795626, 'eau': 0.03665162927496621, 'ousse': 0.055451774444795626, 'vanille': 0.055451774444795626, 'ganache': 0.055451774444795626, 'pralinée': 0.055451774444795626, 'chocolat': 0.055451774444795626, 'praliné': 0.055451774444795626, 'type': 0.055451774444795626, 'pralinoise': 0.055451774444795626, 'noir': 0.055451774444795626, 'crème': 0.03665162927496621, 'liquide': 0.055451774444795626, 'cuilère': 0.055451774444795626, 'vermicelles': 0.055451774444795626, 'pralin': 0.055451774444795626}
+    entrees_vectors1 = [{'mayonnaise': 0.07296286111157319, 'citron': 0.07296286111157319, 'pressé': 0.07296286111157319, 'thé': 0.07296286111157319, 'sauce': 0.07296286111157319, 'worcestershire': 0.07296286111157319, 'tabasco': 0.07296286111157319, 'goût': 0.07296286111157319, 'boîte': 0.04822582799337658, 'chair': 0.07296286111157319, 'crabe': 0.07296286111157319, 'branche': 0.07296286111157319, 'céleri': 0.07296286111157319, 'haché': 0.07296286111157319, 'échalote': 0.07296286111157319, 'hachée': 0.07296286111157319, 'avocats': 0.07296286111157319, 'piment': 0.04822582799337658, 'espelette': 0.04822582799337658}]
+    entrees_vectors2 = {'betterave': 0.12602676010180824, 'feuilles': 0.12602676010180824, 'persil': 0.12602676010180824, 'soupe': 0.06301338005090412, 'moutarde': 0.12602676010180824, 'vinaigre': 0.12602676010180824, 'balsamique': 0.12602676010180824, 'huile': 0.08329915744310501, 'olive': 0.08329915744310501, 'sel': 0.06301338005090412, 'poivre': 0.08329915744310501}
+    entrees_vectors3 = {'potimarron': 0.17328679513998632, 'tranches': 0.17328679513998632, 'jambon': 0.17328679513998632, 'parme': 0.17328679513998632, 'basilic': 0.17328679513998632, 'feuilles': 0.17328679513998632, 'sel': 0.08664339756999316, 'poivre': 0.11453634148426939}
+    plats_vectors1 = [{'eau': 0.05090504065967528, 'riz': 0.07701635339554948, 'risotto': 0.07701635339554948, 'crevettes': 0.07701635339554948, 'roses': 0.07701635339554948, 'crème': 0.05090504065967528, 'fraîche': 0.07701635339554948, 'vin': 0.07701635339554948, 'blanc': 0.07701635339554948, 'oignons': 0.07701635339554948, 'parmesan': 0.07701635339554948, 'cube': 0.07701635339554948, 'bouillon': 0.07701635339554948, 'volaille': 0.07701635339554948, 'huile': 0.05090504065967528, 'olive': 0.05090504065967528, 'cuillères': 0.07701635339554948, 'soupe': 0.03850817669777474}]
+    plats_vectors2 = {'filets': 0.11552453009332421, 'poulet': 0.11552453009332421, 'tomates': 0.11552453009332421, 'pommes': 0.11552453009332421, 'terre': 0.11552453009332421, 'concentré': 0.11552453009332421, 'oignon': 0.11552453009332421, 'piment': 0.07635756098951292, 'espelette': 0.07635756098951292, 'pincée': 0.07635756098951292, 'sel': 0.057762265046662105, 'poivre': 0.07635756098951292}
+    plats_vectors3 = {'veau': 0.06301338005090412, 'sauté': 0.06301338005090412, 'carottes': 0.06301338005090412, 'oignon': 0.06301338005090412, 'vin': 0.06301338005090412, 'muscat': 0.06301338005090412, 'beurre': 0.041649578721552505, 'ail': 0.06301338005090412, 'gousse': 0.06301338005090412, 'cube': 0.06301338005090412, 'bouillon': 0.06301338005090412, 'volaille': 0.06301338005090412, 'huile': 0.041649578721552505, 'olive': 0.041649578721552505, 'cuillère': 0.041649578721552505, 'soupe': 0.03150669002545206, 'maïzena': 0.041649578721552505, 'café': 0.041649578721552505, 'bouquet': 0.06301338005090412, 'garni': 0.06301338005090412, 'sel': 0.03150669002545206, 'poivre': 0.041649578721552505}
+    
+    # execution des fonctions
+    test_knn.add_class('desserts',desserts_vectors1)
+    print(KNNClass.get_classes(test_knn))
+    test_knn.del_class('desserts')
+    print(KNNClass.get_classes(test_knn))
+    test_knn.add_class('desserts',desserts_vectors1)
+    test_knn.add_vector('desserts',desserts_vectors2)
+    test_knn.add_vector('desserts',desserts_vectors3)
+    test_knn.add_class('entrees',entrees_vectors1)
+    test_knn.add_vector('entrees',entrees_vectors2)
+    test_knn.add_vector('entrees',entrees_vectors3)
+    test_knn.add_class('plats',plats_vectors1)
+    test_knn.add_vector('plats',plats_vectors2)
+    test_knn.add_vector('plats',plats_vectors3)
+#    print(KNNClass.get_classes(test_knn))
+    
+    # enregistrement des données du modèle dans un fichier JSON
+    test_knn.save_as_json("mydata_knn.json")
+    
+    test2_knn = KNNClass(description="test 2")
+    # chargement des données du fichier "mydata_knn.json" dans l'instance test2_knn
+    test2_knn.load_as_json("mydata_knn.json")
+#    print(KNNClass.get_classes(test2_knn))
