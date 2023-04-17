@@ -114,46 +114,50 @@ class KNNClass:
 
 
     def classify(self, vector: dict, k: int, sim_func=None) -> List[Tuple[str, float]]:
-        """
-        cette fonction récupère un vecteur sous forme de hashage 
-        le nombre de voisins les plus proches à considérer, et une fonction de similarité sim_func
-        et renvoie une liste triée de paires [label:str,sim:float] pour les classes candidates
-        la liste est triée par similarité décroissante, la similarité étant la moyenne des similarités
-        obtenues sur les vecteurs retenus pour la classe correspondante dans les k plus proches voisins
-        par défaut sim_func est le calcul de cosinus
+            """
+            cette fonction récupère un vecteur sous forme de hashage 
+            le nombre de voisins les plus proches à considérer, et une fonction de similarité sim_func
+            et renvoie une liste triée de paires [label:str,sim:float] pour les classes candidates
+            la liste est triée par similarité décroissante, la similarité étant la moyenne des similarités
+            obtenues sur les vecteurs retenus pour la classe correspondante dans les k plus proches voisins
+            par défaut sim_func est le calcul de cosinus
 
-        Input :
-            arg1 : vector - hash
-            arg2 : k - int
-            arg3 : sim_func - function, par défaut : sim_cosinus
-        Output :
-            valeur de retour : une liste triée de paires [label:str,sim:float] - List[Tuple[str,float]]
-        """
-        # on utilise par défaut la fonction sim_cosinus si aucune fonction de similarité n'est pas fournie
-        if sim_func is None:
-            sim_func = Similarity.sim_cosinus
-        try:
-            # dictionnaire pour stocker les similarités moyennes pour chaque label
-            sim_dict = {}
-            # parcours de chaque label dans le dictionnaire des vecteurs
-            for label, vec_list in self.data.items():
-                # liste pour stocker les similarités pour chaque vecteur du label
-                sim_list = []        
-                # parcours de chaque vecteur du label
-                for vec in vec_list:
-                    # calcul de la similarité entre le vecteur d'entrée et le vecteur actuel du label
-                    sim_list.append(sim_func(vector, vec))
-                # tri décroissant des similarités
-                sim_list.sort(reverse=True)
-                # calcul de la similarité moyenne pour les k plus proches voisins
-                sim_dict[label] = sum(sim_list[:k])/k
-            # tri décroissant des labels par similarité moyenne
-            sorted_sim = sorted(sim_dict.items(), key=lambda x: x[1], reverse=True)
-            # retourne la liste triée de paires [label:str,sim:float]
-            return sorted_sim
-        except Exception as e:
-            print(f"Une erreur s'est produite lors de l'exécution de la fonction classify: {e}")
-            return False
+            Input :
+                arg1 : vector - hash
+                arg2 : k - int
+                arg3 : sim_func - function, par défaut : sim_cosinus
+            Output :
+                valeur de retour : une liste triée de paires [label:str,sim:float] - List[Tuple[str,float]]
+            """
+            # on utilise par défaut la fonction sim_cosinus si aucune fonction de similarité n'est pas fournie
+            if sim_func is None:
+                sim_func = Similarity.sim_cosinus
+            try:
+                # dictionnaire pour stocker les similarités moyennes pour chaque label
+                sim_dict = {}
+                # parcours de chaque dictionnaire dans la liste des dictionnaires des vecteurs
+                for data_dict in self.data:
+                    # récupère le label du dictionnaire courant
+                    label = data_dict['label']
+                    # liste pour stocker les similarités pour chaque vecteur du label
+                    sim_list = []        
+                    # parcours de chaque vecteur du label, si le label n'a pas de vecteurs, on saute cette étape
+                    if len(data_dict['vect']) == 0:
+                        continue
+                    for vec in data_dict['vect']:
+                        # calcul de la similarité entre le vecteur d'entrée et le vecteur actuel du label
+                        sim_list.append(sim_func(vector, vec))
+                    # tri décroissant des similarités
+                    sim_list.sort(reverse=True)
+                    # calcul de la similarité moyenne pour les k plus proches voisins
+                    sim_dict[label] = sum(sim_list[:k])/k
+                # tri décroissant des labels par similarité moyenne
+                sorted_sim = sorted(sim_dict.items(), key=lambda x: x[1], reverse=True)
+                # retourne la liste triée de paires [label:str,sim:float]
+                return sorted_sim
+            except Exception as e:
+                print(f"Une erreur s'est produite lors de l'exécution de la fonction classify: {e}")
+                return False
 
 
 
@@ -209,7 +213,7 @@ class TextVect:
         retourne une liste de dictionnaires chacun contenant le label du dossier et une liste de vecteurs
         
         Input:
-            folder_names (list): Liste des noms de dossiers à parcourir pour lire les fichiers
+            folder_names (list): liste des noms de dossiers à parcourir pour lire les fichiers
         
         Output:
             list: liste de dictionnaires contenant le label et les vecteurs de chaque fichier
@@ -252,6 +256,50 @@ class TextVect:
             # ajout du dictionnaire contenant le label et les vecteurs des fichiers dans la liste vectors
             vectors.append({'label': folder_name, 'vect': vector})
 #        print(vectors)
+        return vectors
+
+
+    def read_txt(file_name:str) -> list:
+        """
+        lit tous les fichiers texte présents dans les dossiers de la liste folder_names
+        tokenise les textes et crée des vecteurs pour chaque fichier
+        retourne une liste de dictionnaires chacun contenant le label du dossier et une liste de vecteurs
+
+        Input:
+            folder_names (list): liste des noms de dossiers à parcourir pour lire les fichiers
+
+        Output:
+            list: liste de dictionnaires contenant le label et les vecteurs de chaque fichier
+        """
+
+        tok_grm = re.compile(r"""
+            (?:etc.|p.ex.|cf.)| # quelques abréviations courantes
+            \w+(?=(?:-(?:je|tu|ils?|elles?|nous|vous|leur|lui|les?|ce|t-|même|ci|là|y)))| # pour capturer les mots composés avec un tiret
+            [\w\-]+'?'| # pour capturer les mots avec des apostrophes
+            [^\W\d]+ # pour capturer seulement des lettres sans des chiffres 
+                    # comme mes données sont des recettes, il est préferable d'ignorer les chiffres 
+        """, re.X)
+
+        vector = []
+        vectors =[]
+        # parcours du fichier
+        try:
+            # ouverture en lecture
+            input_file = open(file_name, mode="r", encoding="utf8")
+            tokens = []
+            for line in input_file:
+                line = line.strip()
+                toks = TextVect.tokenize(line, tok_grm)  # tokenisation des lignes
+                tokens.extend([tok.lower() for tok in toks]) # conversion en minuscule des tokens
+            # ajout du vecteur correspondant au fichier dans la liste vector
+            vector.append(TextVect.vectorise(tokens))
+            # ajout du dictionnaire contenant le label et les vecteurs des fichiers dans la liste vectors
+            vectors.append({'label': file_name, 'vect': vector})
+        except IOError as err:
+            print("Impossible d'ouvrir", file_name, f"Erreur: {err}")
+        finally :
+            input_file.close()
+
         return vectors
 
 
@@ -372,13 +420,36 @@ class TextVect:
                     vector[word] = tf_idf_score
         return documents_new
 
-    
-    
+  
+    def get_vector(documents_tfidf: list) -> dict:
+        """
+        cette fonction renvoie le premier dictionnaire de vecteur de doc de la sortie de la fonction tf_idf
+
+        Input:
+        - documents_tfidf (list): une liste de dictionnaires représentant des documents 
+                                  avec leur score TF-IDF associé
+
+        Output:
+        - dict: un dictionnaire de vecteur associé au premier doc de la liste
+                si la liste et le premier doc existent et ont un vecteur associé
+                sinon renvoie None
+        """
+        if not documents_tfidf:
+            return None
+        first_doc = documents_tfidf[0]
+        if not first_doc['vect']:
+            return None
+        return first_doc['vect'][0]
+
+   
+
+
     
     
     
     
 class Similarity :
+# classe des différentes similarités à appeler dans la fonction classify de la classe KNNClass
 
 
     def scalaire(vector1:dict,vector2:dict)-> float:
@@ -425,9 +496,9 @@ class Similarity :
         Output :
             valeur de retour : un cosinus - float
         """
-        norme1=TextVect.norme(vector1)
-        norme2=TextVect.norme(vector2)
-        scal=TextVect.scalaire(vector1,vector2)
+        norme1=Similarity.norme(vector1)
+        norme2=Similarity.norme(vector2)
+        scal=Similarity.scalaire(vector1,vector2)
         cosinus=(scal/(norme1*norme2))
         return cosinus
     
@@ -493,88 +564,92 @@ class Similarity :
 
 
 
+
         
         
+class Gestion :        
 # fonctions de gestion des fonctions de la classe KNNClass
 
-def add_class_input(knn_object):
-    """
-    demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode add_class() de la classe KNNClass.
-    Args:
-        - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode add_class().
-    """
-    label = ""
-    while not label:
-        label = input("Entrez le label de la nouvelle classe : ")
-        if not label:
-            print("Erreur : le label ne peut pas être vide")
 
-    vector_list = []
-    vector_input = None
-    while vector_input != '':
-        vector_input = input("Entrez un vecteur (ou tapez entrée pour terminer) : ")
-        print(f"vector_input = '{vector_input.strip()}'")
-        if not vector_input:
-            continue
+
+    def add_class_input(knn_object):
+        """
+        demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode add_class() de la classe KNNClass
+        Input:
+            - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode add_class()
+        """
+        label = ""
+        while not label:
+            label = input("Entrez le label de la nouvelle classe : ")
+            if not label:
+                print("Erreur : le label ne peut pas être vide")
+
+        vector_list = []
+        vector_input = None
+        while vector_input != '':
+            vector_input = input("Entrez un vecteur (ou tapez entrée pour terminer) : ")
+            print(f"vector_input = '{vector_input.strip()}'")
+            if not vector_input:
+                continue
+            try:
+                vector = eval(vector_input)  # convertit la chaîne de caractères en dictionnaire 
+                vector_list.append(vector)
+            except (NameError, SyntaxError):
+                print("Erreur : vecteur invalide")
+
+        print(f"Appel de la méthode add_class avec les arguments : label = {label}, vector_list = {vector_list}")
         try:
-            vector = eval(vector_input)  # convertit la chaîne de caractères en dictionnaire 
-            vector_list.append(vector)
-        except (NameError, SyntaxError):
-            print("Erreur : vecteur invalide")
-    
-    print(f"Appel de la méthode add_class avec les arguments : label = {label}, vector_list = {vector_list}")
-    try:
-        knn_object.add_class(label, vector_list)
-        print(f"Classe {label} ajoutée avec succès !")
-    except ValueError as e:
-        print(e)
-    return True
+            knn_object.add_class(label, vector_list)
+            print(f"Classe {label} ajoutée avec succès !")
+        except ValueError as e:
+            print(e)
+        return True
 
 
         
-def add_vector_input(knn_object):
-    """
-    demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode add_vector() de la classe KNNClass
-    Args:
-        - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode add_vector()
-    """
-    label = None
-    while label is None:
-        try:
-            label = str(input("Entrez le label de la classe : "))
-            if label not in knn_object.data:
-                print(f"La classe {label} n'existe pas encore dans le modèle")
-            break
-        except ValueError:
-            print("Erreur : le label doit être un string")          
-    vector = None
-    vector_input = ''
-    while vector_input.strip().lower() != 'q':
-        vector_input = input("Entrez un vecteur (ou tapez 'q' pour terminer) : ")
-        if vector_input.strip().lower() == 'q':
-            break
-        try:
-            vector = eval(vector_input)  # convertit la chaîne de caractères en dictionnaire 
-        except (NameError, SyntaxError):
-            print("Erreur : vecteur invalide")            
-        knn_object.add_vector(label, vector)
-    print(f"Vecteur ajouté à la classe {label} avec succès !")
+    def add_vector_input(knn_object):
+        """
+        demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode add_vector() de la classe KNNClass
+        Input:
+            - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode add_vector()
+        """
+        label = None
+        while label is None:
+            try:
+                label = str(input("Entrez le label de la classe : "))
+                if label not in knn_object.data:
+                    print(f"La classe {label} n'existe pas encore dans le modèle")
+                break
+            except ValueError:
+                print("Erreur : le label doit être un string")          
+        vector = None
+        vector_input = ''
+        while vector_input.strip().lower() != 'q':
+            vector_input = input("Entrez un vecteur (ou tapez 'q' pour terminer) : ")
+            if vector_input.strip().lower() == 'q':
+                break
+            try:
+                vector = eval(vector_input)  # convertit la chaîne de caractères en dictionnaire 
+            except (NameError, SyntaxError):
+                print("Erreur : vecteur invalide")            
+            knn_object.add_vector(label, vector)
+        print(f"Vecteur ajouté à la classe {label} avec succès !")
     
     
-def del_class_input(classifier):
-    """
-    demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode del_class() de la classe KNNClass.
-    Args:
-        - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode del_class()
-    """
-    label = None
-    while label is None:
-        try:
-            label = str(input("Entrez le label de la classe à supprimer : "))
-            knn_object.del_class(label)
-            print(f"La classe {label} a été supprimée avec succès !")
-        except ValueError as e:
-            print(e)
+    def del_class_input(knn_object):
+        """
+        demande à l'utilisateur de saisir les données nécessaires pour exécuter la méthode del_class() de la classe KNNClass
+        Input:
+            - knn_object (KNNClass): l'objet KNNClass sur lequel exécuter la méthode del_class()
+        """
+        label = None
+        while label is None:
+            try:
+                label = str(input("Entrez le label de la classe à supprimer : "))
+                knn_object.del_class(label)
+                print(f"La classe {label} a été supprimée avec succès !")
+            except ValueError as e:
+                print(e)
 
 
     # ajout d'une nouvelle classe à l'instance test_knn
@@ -637,3 +712,21 @@ if __name__ == "__main__":
     # chargement des données du fichier "mydata_knn.json" dans l'instance test2_knn
     test2_knn.load_as_json("mydata_knn.json")
 #    print(KNNClass.get_classes(test2_knn))
+
+
+    knntext = TextVect.read_txt("riz_cantonais.txt")
+    print(knntext)
+
+    filteredknn=TextVect.filtrage(stoplist, knntext, False)
+    print(filteredknn)
+    filtered_tfidfknn=TextVect.tf_idf(filteredknn)
+    print(filtered_tfidfknn)
+    
+    print(TextVect.get_vector(filtered_tfidfknn))
+
+
+    # TEST classify
+    datatestknn = {'dés': 0.046209812037329684, 'épaule': 0.046209812037329684, 'petits': 0.046209812037329684, 'pois': 0.046209812037329684, 'crevettes': 0.046209812037329684, 'cuites': 0.046209812037329684, 'décortiquées': 0.046209812037329684, 'oignon': 0.046209812037329684, 'blanc': 0.046209812037329684, 'riz': 0.046209812037329684, 'champignons': 0.046209812037329684, 'blancs': 0.046209812037329684, 'boîte': 0.046209812037329684, 'ciboulette': 0.046209812037329684, 'soupe': 0.046209812037329684}
+    res = test_knn.classify(datatestknn,3, None)
+    print(res)
+
