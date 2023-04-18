@@ -1,4 +1,5 @@
 a
+à
 abord
 absolument
 afin
@@ -123,6 +124,7 @@ cinquante
 cinquantième
 cinquième
 clac
+cl
 clic
 combien
 comme
@@ -135,6 +137,7 @@ contre
 couic
 crac
 d
+d'
 da
 dans
 de
@@ -268,6 +271,7 @@ fût
 fûtes
 g
 gens
+gr
 h
 ha
 haut
@@ -302,6 +306,7 @@ jusque
 juste
 k
 l
+l'
 la
 laisser
 laquelle
@@ -342,6 +347,7 @@ mille
 mince
 mine
 minimale
+ml
 moi
 moi-meme
 moi-même
@@ -400,7 +406,6 @@ outre
 ouvert
 ouverte
 ouverts
-o|
 où
 p
 paf
@@ -470,6 +475,7 @@ pur
 pure
 q
 qu
+qu'
 quand
 quant
 quant-à-soi
@@ -671,7 +677,6 @@ x
 y
 z
 zut
-à
 â
 ça
 ès
