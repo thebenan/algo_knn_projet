@@ -34,3 +34,33 @@ Instanciation de la classe en fournissant une description :
 from knnclass import KNNClass
 test_knn = KNNClass(description="données de test")
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Classe Gestion
+La classe Gestion contient des fonctions pour ajouter et supprimer des classes et des vecteurs d'un objet KNNClass. L'utilisation de ces fonctions sont facultatives, il est tout à fait possible d'executer les méthodes de la classe KNNClass sans passer par ces fonctions. 
+
+**Fonction add_class_input(knn_object)**
+Cette fonction demande à l'utilisateur de saisir les informations nécessaires pour ajouter une nouvelle classe à l'objet KNNClass passé en paramètre (donc le label de la nouvelle classe ainsi que les vecteurs à ajouter). Les vecteurs doivent être saisis sous forme de dictionnaires. La fonction appelle ensuite la méthode add_class() de l'objet KNNClass avec les arguments saisis par l'utilisateur. Si l'ajout de la classe se passe bien, la fonction affiche un message de confirmation et renvoie True. Si une erreur se produit, la fonction affiche un message d'erreur correspondant.
+
+**Fonction del_class_input(knn_object)**
+Cette fonction demande à l'utilisateur de saisir le label d'une classe à supprimer de l'objet KNNClass passé en paramètre. La fonction appelle ensuite la méthode del_class() de l'objet KNNClass avec le label saisi par l'utilisateur. Si la suppression de la classe se passe bien, la fonction affiche un message de confirmation. Si une erreur se produit, la fonction affiche un message d'erreur correspondant.
+
+**Améliorations possibles pour la classe Gestion :**
+- Il est possible de créer une fonction add_vectors_input(knn_object) qui demande à l'utilisateur de saisir les vecteurs à ajouter, ainsi que le label de la classe à laquelle ajouter ces vecteurs. Cette fonction pourrait faire appel à la méthode add_vector() de la classe KNNClass pour ajouter les vecteurs à la classe correspondante. Cette fonction enlevera la nécessité de repasser par add_class_input() ou d'appeler directement la méthode add_vector() pour ajouter des vecteurs supplémentaires à la classe.
+- Une autre proposition serait d'ajouter une fonction classify_input à la classe Gestion qui appelle la méthode classify en demandant les entrées de la méthode. Cela faciliterait l'utilisation de la fonction classify.
+
+
