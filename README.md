@@ -37,6 +37,24 @@ test_knn = KNNClass(description="données de test")
 
 
 
+## Classe Similarity
+La classe Similarity regroupe plusieurs fonctions de calcul de similarité entre deux vecteurs représentés sous forme de dictionnaires.
+Ces fonctions peuvent être appelées dans la classe KNNClass pour la classification des vecteurs.
+
+* scalaire :
+Cette fonction calcule le produit scalaire de deux vecteurs représentés sous forme de dictionnaires. Elle parcourt les clés des deux dictionnaires et pour chaque clé qui est présente dans les deux dictionnaires, elle multiplie les valeurs correspondantes et ajoute le résultat à une liste. La somme des éléments de cette liste est retournée comme produit scalaire.
+
+* norme :
+Cette fonction calcule la norme d'un vecteur représenté sous forme de dictionnaire.  Elle parcourt les clés du dictionnaire et calcule la somme des carrés des valeurs correspondantes. Ensuite, elle calcule la racine carrée de cette somme et la retourne comme norme.
+
+* sim_cosinus :
+Cette fonction calcule la similarité cosinus entre deux vecteurs représentés sous forme de dictionnaires.  Elle utilise les fonctions scalaire et norme pour calculer le produit scalaire et les normes des deux vecteurs. La similarité cosinus est ensuite calculée en divisant le produit scalaire par le produit des normes.
+
+* sim_euclidienne :
+Cette fonction calcule la similarité euclidienne entre deux vecteurs donnés sous forme de dictionnaires. Elle parcourt les clés des deux dictionnaires et calcule la somme des carrés des écarts entre les valeurs correspondantes. Cette somme est normalisée et retournée comme similarité euclidienne.
+
+* sim_pearson
+Cette fonction calcule la similarité de Pearson entre deux vecteurs donnés sous forme de dictionnaires. Elle calcule la moyenne de chaque vecteur, la somme des carrés des écarts à la moyenne pour les deux vecteurs, les écarts-types pour les deux vecteurs et la covariance pour les deux vecteurs. Enfin, elle calcule la similarité de Pearson en divisant la covariance par le produit des écarts-types.
 
 
 
@@ -53,10 +71,10 @@ test_knn = KNNClass(description="données de test")
 ## Classe Gestion
 La classe Gestion contient des fonctions pour ajouter et supprimer des classes et des vecteurs d'un objet KNNClass. L'utilisation de ces fonctions sont facultatives, il est tout à fait possible d'executer les méthodes de la classe KNNClass sans passer par ces fonctions. 
 
-* Fonction add_class_input(knn_object)
+* add_class_input(knn_object)
 Cette fonction demande à l'utilisateur de saisir les informations nécessaires pour ajouter une nouvelle classe à l'objet KNNClass passé en paramètre (donc le label de la nouvelle classe ainsi que les vecteurs à ajouter). Les vecteurs doivent être saisis sous forme de dictionnaires. La fonction appelle ensuite la méthode add_class() de l'objet KNNClass avec les arguments saisis par l'utilisateur. Si l'ajout de la classe se passe bien, la fonction affiche un message de confirmation et renvoie True. Si une erreur se produit, la fonction affiche un message d'erreur correspondant.
 
-* Fonction del_class_input(knn_object)
+* del_class_input(knn_object)
 Cette fonction demande à l'utilisateur de saisir le label d'une classe à supprimer de l'objet KNNClass passé en paramètre. La fonction appelle ensuite la méthode del_class() de l'objet KNNClass avec le label saisi par l'utilisateur. Si la suppression de la classe se passe bien, la fonction affiche un message de confirmation. Si une erreur se produit, la fonction affiche un message d'erreur correspondant.
 
 **Améliorations possibles pour la classe Gestion :**
