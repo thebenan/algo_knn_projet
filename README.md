@@ -8,7 +8,7 @@ En outre, la classe `Gestion` contient deux méthodes utiles pour manipuler les 
 
 
 
-## Classe `KNNClass`
+### Classe `KNNClass`
 La classe KNNClass implémente un modèle de classification basé sur l'algorithme KNN (k-Nearest Neighbors). Ce modèle permet de classer des vecteurs dans différentes classes en fonction de leur similarité avec les vecteurs de chaque classe. Les méthodes de cette classe sont :
 
 * `init(self, description: str="", data=[]):` 
@@ -44,7 +44,7 @@ test_knn = KNNClass(description="données de test")
 
 
 
-## Classe `Similarity`
+### Classe `Similarity`
 La classe Similarity regroupe plusieurs fonctions de calcul de similarité entre deux vecteurs représentés sous forme de dictionnaires.
 Ces fonctions peuvent être appelées dans la classe KNNClass pour la classification des vecteurs.
 
@@ -75,7 +75,7 @@ Cette fonction calcule la similarité de Pearson entre deux vecteurs donnés sou
 
 
 
-## Classe `Gestion`
+### Classe `Gestion`
 La classe Gestion contient des fonctions pour ajouter et supprimer des classes et des vecteurs d'un objet KNNClass. L'utilisation de ces fonctions sont facultatives, il est tout à fait possible d'executer les méthodes de la classe KNNClass sans passer par ces fonctions. 
 
 * `add_class_input(knn_object):`
