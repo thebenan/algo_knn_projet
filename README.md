@@ -1,6 +1,6 @@
 # L'algorithme KNN
 
-## Classe KNNClass
+## Classe `KNNClass`
 La classe KNNClass implémente un modèle de classification basé sur l'algorithme KNN (k-Nearest Neighbors). Ce modèle permet de classer des vecteurs dans différentes classes en fonction de leur similarité avec les vecteurs de chaque classe. Les méthodes de cette classe sont :
 
 * `init(self, description: str="", data=[]):` 
@@ -36,7 +36,7 @@ test_knn = KNNClass(description="données de test")
 
 
 
-## Classe Similarity
+## Classe `Similarity`
 La classe Similarity regroupe plusieurs fonctions de calcul de similarité entre deux vecteurs représentés sous forme de dictionnaires.
 Ces fonctions peuvent être appelées dans la classe KNNClass pour la classification des vecteurs.
 
@@ -67,7 +67,7 @@ Cette fonction calcule la similarité de Pearson entre deux vecteurs donnés sou
 
 
 
-## Classe Gestion
+## Classe `Gestion`
 La classe Gestion contient des fonctions pour ajouter et supprimer des classes et des vecteurs d'un objet KNNClass. L'utilisation de ces fonctions sont facultatives, il est tout à fait possible d'executer les méthodes de la classe KNNClass sans passer par ces fonctions. 
 
 * `add_class_input(knn_object):`
@@ -76,7 +76,7 @@ Cette fonction demande à l'utilisateur de saisir les informations nécessaires 
 * `del_class_input(knn_object):`
 Cette fonction demande à l'utilisateur de saisir le label d'une classe à supprimer de l'objet KNNClass passé en paramètre. La fonction appelle ensuite la méthode `del_class()` de l'objet KNNClass avec le label saisi par l'utilisateur. Si la suppression de la classe se passe bien, la fonction affiche un message de confirmation. Si une erreur se produit, la fonction affiche un message d'erreur correspondant.
 
-**Améliorations possibles pour la classe Gestion :**
+**Améliorations possibles pour la classe `Gestion` :**
 
 - Il est possible de créer une fonction `add_vectors_input(knn_object)` qui demande à l'utilisateur de saisir les vecteurs à ajouter, ainsi que le label de la classe à laquelle ajouter ces vecteurs. Cette fonction pourrait faire appel à la méthode `add_vector()` de la classe KNNClass pour ajouter les vecteurs à la classe correspondante. Cette fonction enlevera la nécessité de repasser par `add_class_input()` ou d'appeler directement la méthode `add_vector()` pour ajouter des vecteurs supplémentaires à la classe.
 - Une autre proposition serait d'ajouter une fonction `classify_input(knn_object)` à la classe Gestion qui appelle la méthode `classify` en demandant les entrées de la méthode. Cela faciliterait l'utilisation de la fonction `classify`.
