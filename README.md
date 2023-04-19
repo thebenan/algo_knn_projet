@@ -1,4 +1,12 @@
 # L'algorithme KNN
+Dans le cadre de cette tâche, des documents texte de recettes sont traités. Ces documents sont stockés dans les dossiers "plats", "desserts" et "entrees", contenant chacun cinq fichiers de recettes. Les fichiers sont convertis en vecteurs TF-IDF et stockés dans la variable "data" de la classe `KNNClass`. Tout d'abord, les fichiers sont lus, tokenizés et vectorisés à l'aide des fonctions de la classe TextVect. Les vecteurs obtenus sont utilisés pour calculer le TF-IDF de chaque terme dans chaque document, permettant ainsi d'obtenir des vecteurs normalisés de poids de termes pour chaque document. Les résultats du TF-IDF sont stockés dans la variable "data" de la classe "KNNClass". Ensuite, lorsqu'un utilisateur fournit un nouveau texte à classifier, celui-ci est également converti en un vecteur TF-IDF et comparé aux vecteurs stockés dans "data" à l'aide de la méthode classify KNN, en utilisant une fonction de similarité qui peut être sélectionnée parmi les trois options disponibles dans la classe `Similarity`.
+En outre, la classe `Gestion` contient deux méthodes utiles pour manipuler les données stockées dans la classe `KNNClass`. La méthode `add_class_input` permet d'ajouter des données à la classe `KNNClass` en appelant la méthode `add_class` de la classe `KNNClass`, tandis que la méthode `del_class_input` permet de supprimer des données de la classe en appelant la méthode `del_class` de la classe `KNNClass`.
+
+
+
+
+
+
 
 ## Classe `KNNClass`
 La classe KNNClass implémente un modèle de classification basé sur l'algorithme KNN (k-Nearest Neighbors). Ce modèle permet de classer des vecteurs dans différentes classes en fonction de leur similarité avec les vecteurs de chaque classe. Les méthodes de cette classe sont :
