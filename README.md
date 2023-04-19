@@ -84,8 +84,18 @@ Cette fonction demande à l'utilisateur de saisir les informations nécessaires 
 * `del_class_input(knn_object):`
 Cette fonction demande à l'utilisateur de saisir le label d'une classe à supprimer de l'objet KNNClass passé en paramètre. La fonction appelle ensuite la méthode `del_class()` de l'objet KNNClass avec le label saisi par l'utilisateur. Si la suppression de la classe se passe bien, la fonction affiche un message de confirmation. Si une erreur se produit, la fonction affiche un message d'erreur correspondant.
 
-**Améliorations possibles pour la classe `Gestion` :**
 
+## Améliorations possibles :
+
+**Pour la classe `Similarity` :**
+## Améliorations possibles
+
+- Ajout de mesures de similarité alternatives telles que la similarité de Jaccard, la similarité de Dice ou la distance de Levenshtein, etc. Ces mesures peuvent être passées en paramètre de la fonction `classify`.
+- La mesure de similarité euclidienne n'est pas vraiment la meilleure option pour la classification KNN, en particulier lorsqu'il y a des différences significatives dans les magnitudes des vecteurs. La similarite cosinus marche le mieux pour le test.
+
+
+
+**Pour la classe `Gestion` :**
 - Il est possible de créer une fonction `add_vectors_input(knn_object)` qui demande à l'utilisateur de saisir les vecteurs à ajouter, ainsi que le label de la classe à laquelle ajouter ces vecteurs. Cette fonction pourrait faire appel à la méthode `add_vector()` de la classe KNNClass pour ajouter les vecteurs à la classe correspondante. Cette fonction enlevera la nécessité de repasser par `add_class_input()` ou d'appeler directement la méthode `add_vector()` pour ajouter des vecteurs supplémentaires à la classe.
 - Une autre proposition serait d'ajouter une fonction `classify_input(knn_object)` à la classe Gestion qui appelle la méthode `classify` en demandant les entrées de la méthode. Cela faciliterait l'utilisation de la fonction `classify`.
 
