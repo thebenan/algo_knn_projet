@@ -515,9 +515,10 @@ class Similarity :
         """
         # initialisation de la distance à 0
         distance = 0.0
-        # parcours des clés des deux dictionnaires
-        for k in vector1.keys():
-            # calcul de la distance euclidienne pour chaque clé
+        # récupération de l'ensemble des clés communes aux deux dictionnaires
+        common_keys = set(vector1.keys()).intersection(set(vector2.keys()))
+        # calcul de la distance euclidienne pour chaque clé commune
+        for k in common_keys:
             distance += (vector1[k] - vector2[k])**2
         # normalisation de la distance pour obtenir une valeur de similarité entre 0 et 1
         return 1/(1+math.sqrt(distance))
