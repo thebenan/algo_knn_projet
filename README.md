@@ -88,7 +88,6 @@ Cette fonction demande à l'utilisateur de saisir le label d'une classe à suppr
 ## Améliorations possibles :
 
 **Pour la classe `Similarity` :**
-## Améliorations possibles
 
 - Ajout de mesures de similarité alternatives telles que la similarité de Jaccard, la similarité de Dice ou la distance de Levenshtein, etc. Ces mesures peuvent être passées en paramètre de la fonction `classify`.
 - La mesure de similarité euclidienne n'est pas vraiment la meilleure option pour la classification KNN, en particulier lorsqu'il y a des différences significatives dans les magnitudes des vecteurs. La similarite cosinus marche le mieux pour le test.
