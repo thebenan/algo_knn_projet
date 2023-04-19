@@ -708,6 +708,8 @@ if __name__ == "__main__":
 #    print(KNNClass.get_classes(test2_knn))
 
 
+
+    # TEST classify
     knntext = TextVect.read_txt("riz_cantonais.txt")
 #    print(knntext)
 
@@ -716,11 +718,23 @@ if __name__ == "__main__":
     filtered_tfidfknn=TextVect.tf_idf(filteredknn)
     print(filtered_tfidfknn)
     
-    print(TextVect.get_vector(filtered_tfidfknn))
-
-
-    # TEST classify
+    print("Riz cantonais :",TextVect.get_vector(filtered_tfidfknn))
     datatestknn = {'dés': 0.046209812037329684, 'épaule': 0.046209812037329684, 'petits': 0.046209812037329684, 'pois': 0.046209812037329684, 'crevettes': 0.046209812037329684, 'cuites': 0.046209812037329684, 'décortiquées': 0.046209812037329684, 'oignon': 0.046209812037329684, 'blanc': 0.046209812037329684, 'riz': 0.046209812037329684, 'champignons': 0.046209812037329684, 'blancs': 0.046209812037329684, 'boîte': 0.046209812037329684, 'ciboulette': 0.046209812037329684, 'soupe': 0.046209812037329684}
     res = test_knn.classify(datatestknn,3, None)
     print("Résultat de la classification du riz cantonais entre les classes de plats, entrées et desserts en utilisant les fonctions classify et sim_cosinus : \n",res)
 
+    
+    # TEST 2 avec nouveau fichier de recette
+    knntext2 = TextVect.read_txt("tiramisu_framboise.txt")
+#    print(knntext2)
+
+    filteredknn2=TextVect.filtrage(stoplist, knntext2, False)
+#    print(filteredknn)
+    filtered_tfidfknn2=TextVect.tf_idf(filteredknn2)
+#    print(filtered_tfidfknn2)
+    
+    print("Tiramisu framboise :",TextVect.get_vector(filtered_tfidfknn2))
+    datatestknn2 = {'oeufs': 0.06931471805599453, 'mascarpone': 0.06931471805599453, 'sucre': 0.06931471805599453, 'biscuits': 0.06931471805599453, 'cuillère': 0.06931471805599453, 'eau': 0.06931471805599453, 'cuil': 0.06931471805599453, 'soupe': 0.06931471805599453, 'sirop': 0.06931471805599453, 'framboises': 0.06931471805599453}
+    res2 = test_knn.classify(datatestknn2,5, None)
+    print("Résultat de la classification du tiramisu framboise entre les classes de plats, entrées et desserts en utilisant les fonctions classify et sim_cosinus : \n",res2)
+    
