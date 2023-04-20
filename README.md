@@ -56,6 +56,7 @@ Cette fonction permet de lire tous les fichiers texte présents dans les dossier
 Cette fonction permet de lire un fichier texte, de le découper en mots ou termes et de créer un vecteur de représentation pour le fichier. Elle retourne une liste de dictionnaires contenant le label et le vecteur du fichier.
 
   - Notez que `read_texts` est utilisé pour la création des classes avec les vecteurs associés et que `read_txt` est utilisé pour le fichier à classifier en utilisant la méthode `classify`.
+  - L'expresion regulière utilisée pour la tokenisation permet de capturer les abréviations courantes, les mots composés avec un tiret, les mots avec des apostrophes, et les mots ne contenant que des lettres. Elle ignore les chiffres car les données sont des recettes (donc ignore les mesures d'ingrédients).
 
 * `read_dict(stoplist_filename: str) -> set(str):`
 Cette fonction permet de lire une stoplist à partir d'un fichier. Le fichier doit contenir un mot par ligne. La fonction prend en entrée le nom du fichier contenant les stopwords, et renvoie un ensemble (set) des stopwords.
