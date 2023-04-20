@@ -57,7 +57,7 @@ class KNNClass:
             if self.data[i]["label"] == label:
                 self.data[i]["vect"].append(vector)
                 print("Vecteur ajouté à la classe", label," en utilisant la fonction add_vector")
-                return
+                return # renvoie vide car la fonction s'arrête une fois que le vecteur est ajouté à la classe
         raise ValueError(f"La classe {label} n'existe pas dans le modèle")
 
 
@@ -73,7 +73,7 @@ class KNNClass:
             if cls['label'] == label:
                 self.data.remove(cls)
                 print(f"La classe {label} a été supprimée en utilisant la fonction del_class")
-                return
+                return # renvoie vide car la fonction s'arrête une fois que la classe est supprimée
         raise ValueError(f"La classe {label} n'existe pas dans le modèle")
 
 
@@ -176,7 +176,7 @@ class KNNClass:
 class TextVect:
 
 
-    # tokenize à partir du regex (dans read_texts)
+    # tokenize à partir du regex (dans read_texts et read_txt)
     def tokenize(text:str,tok_grm)->list:
         """
         Input : 
@@ -411,8 +411,11 @@ class TextVect:
                     # calcul de la fréquence inverse du mot dans l'ensemble des documents
                     if word not in freq_doc:
                         freq_doc[word] = 0
+                        # itération sur chaque document dans la liste
                         for d in documents_new:
+                            # vérifie si le mot est présent dans un des vecteurs du document
                             if word in set(w for v in d["vect"] for w in v):
+                                # incrémente le nombre de documents contenant le mot
                                 freq_doc[word] += 1
                     idf = math.log(1 + len(documents_new) / freq_doc[word])
                     # calcul du score tf-idf pour le mot dans le vecteur
@@ -424,18 +427,14 @@ class TextVect:
   
     def get_vector(documents_tfidf: list) -> dict:
         """
-        cette fonction renvoie le premier dictionnaire de vecteur de doc de la sortie de la fonction tf_idf
-
+        Cette fonction renvoie le premier dictionnaire de vecteur de doc de la sortie de la fonction tf_idf.
         Input:
-        - documents_tfidf (list): une liste de dictionnaires représentant des doc 
-                                  avec leur score TF-IDF associé
-
+        - documents_tfidf (list): une liste de dictionnaires représentant des doc avec leur score TF-IDF associé.
         Output:
-        - dict: un dictionnaire de vecteur associé au premier doc de la liste
-                si la liste et le premier doc existent et ont un vecteur associé
-                sinon renvoie None
+        - dict: un dictionnaire de vecteur associé au premier doc de la liste si la liste et le premier doc existent et ont un vecteur associé, sinon renvoie None.
         """
         return documents_tfidf[0]['vect'][0] if documents_tfidf and documents_tfidf[0]['vect'] else None
+
 
    
 
@@ -517,47 +516,48 @@ class Similarity :
             distance += (vector1[k] - vector2[k])**2
         # normalisation de la distance pour obtenir une valeur de similarité entre 0 et 1
         return 1/(1+math.sqrt(distance))
+
     
 
     def sim_pearson(vector1: dict, vector2: dict) -> float:
         """
-        calcul de la similarité de Pearson entre deux vecteurs (mesure de la corrélation)
+        calcul de la similarité de Pearson centrée entre deux vecteurs (mesure de la corrélation)
         varie entre -1 et 1 =>  1 indique une forte corrélation positive,
         -1 indique une forte corrélation négative et 0 indique l'absence de corrélation
         Input:
             arg1 vector1: premier vecteur - dict
             arg2 vector2: deuxieme vecteur - dict
         Output:
-            valeur de retour : similarité de Pearson entre vector1 et vector2 - float
+            valeur de retour : similarité de Pearson centrée entre vector1 et vector2 - float
         """
 
         # calcul de la moyenne de chaque vecteur
         moy_vector1 = sum(vector1.values()) / len(vector1)
         moy_vector2 = sum(vector2.values()) / len(vector2)
 
-        # calcul de la somme des carrés des écarts à la moyenne pour les deux vecteurs
-        somme_carres_ecarts_vector1 = 0.0
-        somme_carres_ecarts_vector2 = 0.0
-        for k in vector1:
-            if k in vector2:
-                somme_carres_ecarts_vector1 += (vector1[k] - moy_vector1) ** 2
-                somme_carres_ecarts_vector2 += (vector2[k] - moy_vector2) ** 2
+        # centrage des vecteurs
+        centred_vector1 = {k: v - moy_vector1 for k, v in vector1.items()}
+        centred_vector2 = {k: v - moy_vector2 for k, v in vector2.items()}
 
-        # calcul des écarts-types pour les deux vecteurs
+        # calcul de la somme des produits des écarts à la moyenne pour les deux vecteurs centrés
+        somme_produits_ecarts = 0.0
+        for k in centred_vector1:
+            if k in centred_vector2:
+                somme_produits_ecarts += centred_vector1[k] * centred_vector2[k]
+
+        # calcul des somme des carrés des écarts à la moyenne pour les deux vecteurs centrés
+        somme_carres_ecarts_vector1 = sum([(v - moy_vector1) ** 2 for v in vector1.values()])
+        somme_carres_ecarts_vector2 = sum([(v - moy_vector2) ** 2 for v in vector2.values()])
+
+        # calcul des écarts-types pour les deux vecteurs centrés
         std_vector1 = math.sqrt(somme_carres_ecarts_vector1 / len(vector1))
         std_vector2 = math.sqrt(somme_carres_ecarts_vector2 / len(vector2))
 
-        # calcul de la covariance pour les deux vecteurs
-        cov = 0.0
-        for k in vector1:
-            if k in vector2:
-                cov += (vector1[k] - moy_vector1) * (vector2[k] - moy_vector2)
-
-        # calcul de la similarité de Pearson
+        # calcul de la similarité de Pearson centrée
         if std_vector1 == 0 or std_vector2 == 0:
             return 0
         else:
-            return cov / (std_vector1 * std_vector2)
+            return somme_produits_ecarts / (std_vector1 * std_vector2)
 
 
 
@@ -692,7 +692,6 @@ if __name__ == "__main__":
     test_knn.add_vector('plats',plats_vectors4)
     test_knn.add_vector('plats',plats_vectors5)
     
-    
     print(KNNClass.get_classes(test_knn))
     
     # enregistrement des données du modèle dans un fichier JSON
@@ -733,4 +732,4 @@ if __name__ == "__main__":
     datatestknn2 = {'oeufs': 0.06931471805599453, 'mascarpone': 0.06931471805599453, 'sucre': 0.06931471805599453, 'biscuits': 0.06931471805599453, 'cuillère': 0.06931471805599453, 'eau': 0.06931471805599453, 'cuil': 0.06931471805599453, 'soupe': 0.06931471805599453, 'sirop': 0.06931471805599453, 'framboises': 0.06931471805599453}
     res2 = test_knn.classify(datatestknn2,5, None)
     print("Résultat de la classification du tiramisu framboise entre les classes de plats, entrées et desserts en utilisant les fonctions classify et sim_cosinus : \n",res2)
-    
+
