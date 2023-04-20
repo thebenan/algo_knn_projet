@@ -435,12 +435,7 @@ class TextVect:
                 si la liste et le premier doc existent et ont un vecteur associé
                 sinon renvoie None
         """
-        if not documents_tfidf:
-            return None
-        first_doc = documents_tfidf[0]
-        if not first_doc['vect']:
-            return None
-        return first_doc['vect'][0]
+        return documents_tfidf[0]['vect'][0] if documents_tfidf and documents_tfidf[0]['vect'] else None
 
    
 
