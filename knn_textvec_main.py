@@ -267,10 +267,10 @@ class TextVect:
         retourne une liste de dictionnaires chacun contenant le label du dossier et une liste de vecteurs
 
         Input:
-            folder_names (list): liste des noms de dossiers à parcourir pour lire les fichiers
+            file_name: (str): nom de fichier à lire
 
         Output:
-            list: liste de dictionnaires contenant le label et les vecteurs de chaque fichier
+            list: liste de dictionnaires contenant le label et les vecteurs du fichier
         """
 
         tok_grm = re.compile(r"""
@@ -345,11 +345,12 @@ class TextVect:
                 # dict vect
                 tokens_filtre = {}
                 for token, freq in tokens.items():
-                # on filtre les tokens en fonction de la stoplist et de la fréquence des mots
+                # on vérifie si le mot est dans la stoplist et si sa fréquence est supérieure à 1 si non_hapax=True
                     if token.lower() not in stoplist:
                         if non_hapax:
                             if freq > 1:
                                 tokens_filtre[token] = freq
+                        # sinon on ajoute le mot dans le vecteur de mots filtré avec sa fréquence                        
                         else:
                             tokens_filtre[token] = freq
                 # on ajoute les tokens filtrés au document filtré
